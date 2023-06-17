@@ -3,15 +3,12 @@
 
 namespace dreadpools {
 
-ThreadPool::ThreadPool(const std::size_t count_threads) : threads(count_threads) {
+ThreadPool::ThreadPool(const std::size_t count_threads) : threads(count_threads) {}
+
+void ThreadPool::start() {
     for (auto& t : threads) {
         t = std::jthread(ThreadWorker(*this));
     }
-}
-
-template <typename F, typename ... Args>
-auto ThreadPool::submit(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>> {
-    
 }
 
 ThreadPool::~ThreadPool() {

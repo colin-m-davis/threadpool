@@ -21,8 +21,22 @@ class ThreadPool {
 public:
     ThreadPool(const std::size_t count_threads);
 
+    void start();
+
     template <typename F, typename ... Args>
-    auto submit(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>>;
+    auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+        typedef decltype(f(args...)) rt;
+        std::function<rt()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+        auto task_ptr = std::make_shared<std::packaged_task<rt()>>(func);
+
+        std::function<void()> wrapper_func = [task_ptr]() {
+            (*task_ptr)();
+        };
+
+        _tasks.enqueue(wrapper_func);
+        _cv.notify_all();
+        return task_ptr->get_future();
+    }
 
     ~ThreadPool();
 
