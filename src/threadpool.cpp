@@ -11,9 +11,9 @@ void ThreadPool::start() {
     }
 }
 
-// assures all tasks are completed before joining threads by submitting a "shutdown" task
+// assures all tasks are completed before joining threads by submitting an empty "shutdown" task
 void ThreadPool::join() {
-    auto fut = submit([this]{});
+    auto fut = submit([]{});
     fut.get();
     {
         std::unique_lock lock(_cv_m);
