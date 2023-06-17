@@ -26,7 +26,7 @@ private:
     std::condition_variable _cv{};
     std::mutex _cv_m{};
     TaskQueue<std::function<void()>> _tasks{};
-    std::stop_source stop_source;
+    std::stop_source _stop_source;
     friend class ThreadWorker;
 };
 
@@ -34,14 +34,14 @@ private:
 class ThreadWorker {
 public:
     explicit ThreadWorker(ThreadPool& p) :
-        pool(p),
-        stop_token(p.stop_source.get_token()
+        _pool(p),
+        _stop_token(p._stop_source.get_token()
     ) {}
     void operator()();
 
 private:
-    ThreadPool& pool;
-    std::stop_token stop_token;
+    ThreadPool& _pool;
+    std::stop_token _stop_token;
 };
 
 }

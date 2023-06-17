@@ -10,23 +10,23 @@ ThreadPool::ThreadPool(const std::size_t count_threads) : threads(count_threads)
 }
 
 ThreadPool::~ThreadPool() {
-    stop_source.request_stop();
+    _stop_source.request_stop();
     _cv.notify_all();
 }
 
 
 void ThreadWorker::operator()() {
-    while (!stop_token.stop_requested()) {
+    while (!_stop_token.stop_requested()) {
         std::function<void()> task;
         bool has_task = false;
-        while (!has_task && !stop_token.stop_requested()) {
-            std::unique_lock lock(pool._cv_m);
-            if (pool._tasks.empty()) {
-                pool._cv.wait(lock);
+        while (!has_task && !_stop_token.stop_requested()) {
+            std::unique_lock lock(_pool._cv_m);
+            if (_pool._tasks.empty()) {
+                _pool._cv.wait(lock);
             }
-            has_task = (pool._tasks.dequeue(task));
+            has_task = (_pool._tasks.dequeue(task));
         }
-        if (!stop_token.stop_requested()) {
+        if (!_stop_token.stop_requested()) {
             task();  // perform task
         }
     }
