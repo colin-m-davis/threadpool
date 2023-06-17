@@ -11,6 +11,17 @@ void ThreadPool::start() {
     }
 }
 
+void ThreadPool::join() {
+    auto fut = submit([this]{ 
+        _stop_source.request_stop();
+        _cv.notify_all();
+    });
+    fut.wait();
+    for (auto& t : threads) {
+        t.join();
+    }
+}
+
 ThreadPool::~ThreadPool() {
     _stop_source.request_stop();
     _cv.notify_all();

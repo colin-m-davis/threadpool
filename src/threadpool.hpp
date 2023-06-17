@@ -23,6 +23,8 @@ public:
 
     void start();
 
+    void join();
+
     template <typename F, typename ... Args>
     auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
         typedef decltype(f(args...)) rt;
@@ -34,7 +36,7 @@ public:
         };
 
         _tasks.enqueue(wrapper_func);
-        _cv.notify_all();
+        _cv.notify_one();
         return task_ptr->get_future();
     }
 
