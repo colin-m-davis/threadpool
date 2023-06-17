@@ -11,16 +11,22 @@ namespace dreadpools {
 
 class ThreadPool {
 public:
-    
+    bool is_active{true};
+
 private:
-    TaskQueue<std::function<void()>> _tasks;
+    std::condition_variable _cv{};
+    std::mutex _cv_m{};
+    TaskQueue<std::function<void()>> _tasks{};
+    friend class ThreadWorker;
 };
 
 class ThreadWorker {
 public:
-    ThreadWorker(const ThreadPool& p) : pool(p) {}
+    ThreadWorker(ThreadPool& p) : pool(p) {}
+    void operator()();
+
 private:
-    const ThreadPool& pool;
+    ThreadPool& pool;
 };
 
 }
