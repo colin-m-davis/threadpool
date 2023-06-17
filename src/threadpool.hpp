@@ -8,16 +8,16 @@
 #include <cstddef>
 #include <thread>
 #include <vector>
+#include <iostream>
+#include <stop_token>
 #include "taskqueue.hpp"
 
 namespace dreadpools {
 
 class ThreadPool {
 public:
-    ThreadPool(const std::size_t count_threads) {
-        threads.resize(count_threads, std::thread(ThreadWorker(*this)));
-    }
-    bool is_active{true};
+    ThreadPool(const std::size_t count_threads);
+    bool is_active{false};
 
 private:
     std::vector<std::thread> threads;
@@ -27,12 +27,14 @@ private:
     friend class ThreadWorker;
 };
 
+
 class ThreadWorker {
 public:
     ThreadWorker(ThreadPool& p) : pool(p) {}
     void operator()();
 
 private:
+    // std::stop_token stop_token;
     ThreadPool& pool;
 };
 

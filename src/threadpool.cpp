@@ -3,9 +3,17 @@
 
 namespace dreadpools {
 
+ThreadPool::ThreadPool(const std::size_t count_threads) : threads(count_threads) {
+    for (auto& t : threads) {
+        t = std::thread(std::thread(ThreadWorker(*this)));
+    }
+}
+
+
 void ThreadWorker::operator()() {
+    std::cout << "operator()\n";
     // <stop_token>
-    while (pool.is_active) {
+    while (true) {
         std::function<void()> task;
         bool has_task = false;
         while (!has_task) {

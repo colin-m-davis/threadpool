@@ -3,6 +3,6 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    std::cout << argv[0] << std::endl;
+    dreadpools::ThreadPool my_threadpool(4);
     return 0;
 }
