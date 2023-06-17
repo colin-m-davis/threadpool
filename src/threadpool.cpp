@@ -11,14 +11,19 @@ void ThreadPool::start() {
     }
 }
 
+// assures all tasks are completed before joining threads by submitting a "shutdown" task
 void ThreadPool::join() {
-    auto fut = submit([this]{ 
+    auto fut = submit([this]{});
+    fut.get();
+    {
+        std::unique_lock lock(_cv_m);
         _stop_source.request_stop();
         _cv.notify_all();
-    });
-    fut.wait();
+    }
     for (auto& t : threads) {
-        t.join();
+        if (t.joinable()) {
+            t.join();
+        }
     }
 }
 
@@ -32,14 +37,14 @@ void ThreadWorker::operator()() {
     while (!_stop_token.stop_requested()) {
         std::function<void()> task;
         bool has_task = false;
-        while (!has_task && !_stop_token.stop_requested()) {
+        {
             std::unique_lock lock(_pool._cv_m);
-            if (_pool._tasks.empty()) {
+            while (_pool._tasks.empty() && !_stop_token.stop_requested()) {
                 _pool._cv.wait(lock);
             }
             has_task = _pool._tasks.dequeue(task);
         }
-        if (!_stop_token.stop_requested()) {
+        if (has_task) {
             task();  // perform task
         }
     }
