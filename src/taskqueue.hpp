@@ -7,7 +7,7 @@
 namespace dreadpools {
 
 template <typename T>
-class MessageQueue {
+class TaskQueue {
 public:
     [[nodiscard]] bool empty() const {
         lock_t lock(_mutex);
