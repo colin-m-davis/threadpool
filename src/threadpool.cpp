@@ -1,8 +1,10 @@
 #include "threadpool.hpp"
 
+
 namespace dreadpools {
 
 void ThreadWorker::operator()() {
+    // <stop_token>
     while (pool.is_active) {
         std::function<void()> task;
         bool has_task = false;
@@ -13,7 +15,7 @@ void ThreadWorker::operator()() {
             }
             has_task = (pool._tasks.dequeue(task));
         }
-        task();
+        task();  // perform task
     }
 }
 
