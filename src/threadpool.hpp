@@ -10,6 +10,8 @@
 #include <vector>
 #include <iostream>
 #include <stop_token>
+#include <future>
+#include <type_traits>
 #include "taskqueue.hpp"
 
 
@@ -18,7 +20,10 @@ namespace dreadpools {
 class ThreadPool {
 public:
     ThreadPool(const std::size_t count_threads);
-    bool is_active{false};
+
+    template <typename F, typename ... Args>
+    auto submit(F&& f, Args&&... args) -> std::future<std::invoke_result_t<F, Args...>>;
+
     ~ThreadPool();
 
 private:
