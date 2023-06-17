@@ -12,6 +12,7 @@
 #include <stop_token>
 #include <future>
 #include <type_traits>
+#include <algorithm>
 #include "taskqueue.hpp"
 
 
@@ -19,7 +20,10 @@ namespace dreadpools {
 
 class ThreadPool {
 public:
-    ThreadPool(const std::size_t count_threads);
+    // std::thread::hardware_concurrency() can return 0
+    ThreadPool(
+        const unsigned int count_threads = std::max(1u, std::thread::hardware_concurrency()) - 1u
+    ) : threads(count_threads) {};
 
     void start();
 

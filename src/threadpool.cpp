@@ -3,23 +3,24 @@
 
 namespace dreadpools {
 
-ThreadPool::ThreadPool(const std::size_t count_threads) : threads(count_threads) {}
-
 void ThreadPool::start() {
     for (auto& t : threads) {
         t = std::jthread(ThreadWorker(*this));
     }
 }
 
-// assures all tasks are completed before joining threads by submitting an empty "shutdown" task
+// assures all tasks are completed before joining threads
 void ThreadPool::join() {
+    // adds a dummy task to end of queue
     auto fut = submit([]{});
     fut.get();
+    // all tasks that were in the queue when join() was called have been picked up by a thread
     {
         std::unique_lock lock(_cv_m);
         _stop_source.request_stop();
         _cv.notify_all();
     }
+    // wait for threads to complete their tasks as necessary
     for (auto& t : threads) {
         if (t.joinable()) {
             t.join();
